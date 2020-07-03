@@ -4,7 +4,7 @@ int rez = 5;
 int cols, rows;
 
 void setup() {
-  size(640, 480);
+  size(800, 600);
   cols = 1 + width / rez;
   rows = 1 + height / rez;
   field = new float[cols][rows];
@@ -33,13 +33,13 @@ void draw() {
     }
   }
   float factor = 10;
-  for (int i = 0; i < cols; i++) {
-    for (int j = 0; j < rows; j++) {
-      fill(field[i][j]*factor);
-      noStroke();
-      rect(i*rez, j*rez, rez, rez);
-    }
-  }
+  //for (int i = 0; i < cols; i++) {
+  //  for (int j = 0; j < rows; j++) {
+  //    fill(field[i][j]*factor);
+  //    noStroke();
+  //    rect(i*rez, j*rez, rez, rez);
+  //  }
+  //}
 
   for (int i = 0; i < cols-1; i++) {
     for (int j = 0; j < rows-1; j++) {
@@ -58,7 +58,7 @@ void draw() {
 
 
       int state = getState(c1, c2, c3, c4);
-      stroke(0);
+      stroke(255);
       strokeWeight(4);
       switch (state) {
       case 1:  
