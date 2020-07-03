@@ -1,10 +1,10 @@
-Bubble[] bubbles = new Bubble[5];
+Bubble[] bubbles = new Bubble[15];
 float[][] field;
-int rez = 20;
+int rez = 5;
 int cols, rows;
 
 void setup() {
-  size(640, 480);
+  size(800, 600);
   randomSeed(2);
   cols = 1 + width / rez;
   rows = 1 + height / rez;
@@ -21,26 +21,23 @@ void line(PVector v1, PVector v2) {
 void draw() {
   background(0); 
 
+  //for (int i = 0; i < cols; i++) {
+  //  float x = i * rez;
+  //  stroke(255, 100);
+  //  line(x, 0, x, height);
+  //}
 
-  for (int i = 0; i < cols; i++) {
-    float x = i * rez;
-    stroke(255, 100);
-    line(x, 0, x, height);
-  }
-
-  for (int i = 0; i < rows; i++) {
-    float y = i * rez;
-    stroke(255, 100);
-    line(0, y, width, y);
-  }
-
+  //for (int i = 0; i < rows; i++) {
+  //  float y = i * rez;
+  //  stroke(255, 100);
+  //  line(0, y, width, y);
+  //}
 
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
       float sum = 0;
       float x = i * rez;
       float y = j * rez;
-
       for (Bubble b : bubbles) {
         sum += b.r*b.r / ((x-b.x)*(x-b.x) + (y-b.y)*(y-b.y));
       }
@@ -51,7 +48,7 @@ void draw() {
 
   for (Bubble b : bubbles) {
     b.update();
-    b.show();
+    //b.show();
   }
 
 
@@ -59,15 +56,7 @@ void draw() {
     for (int j = 0; j < rows-1; j++) {
       float x = i * rez;
       float y = j * rez;
-      PVector a = new PVector(x + rez * 0.5, y            );
-      PVector b = new PVector(x + rez, y + rez * 0.5);
-      PVector c = new PVector(x + rez * 0.5, y + rez      );
-      PVector d = new PVector(x, y + rez * 0.5);
 
-      //PVector a = new  PVector(x, y);
-      //PVector b = new  PVector(x+rez, y);
-      //PVector c = new  PVector(x, y+rez);
-      //PVector d = new  PVector(x+rez, y+rez);
 
       float threshold = 1;
       int c1 = field[i][j]  < threshold ? 0 : 1;
@@ -79,17 +68,29 @@ void draw() {
       strokeWeight(2);
       float a_val = field[i][j];
       float b_val = field[i+1][j];
-      float c_val = field[i][j+1];
-      float d_val = field[i+1][j+1];      
-      //float amt1 = (1 - a_val) / (c_val - a_val); 
-      //float qx = a.x;
-      //float qy = lerp(a.y, c.y, amt1);
+      float c_val = field[i+1][j+1];
+      float d_val = field[i][j+1];      
 
-      //float amt2 = (1 - d_val) / (c_val - d_val);
-      //float px = lerp(c.x, d.x, amt2);
-      //float py = c.y;
-      //line(px, py, qx, qy);
+      PVector a = new PVector();
+      float amt = (1 - a_val) / (b_val - a_val);
+      a.x = lerp(x, x + rez, amt);
+      a.y = y;
 
+      PVector b = new PVector();
+      amt = (1 - b_val) / (c_val - b_val);
+      b.x = x + rez;
+      b.y = lerp(y, y + rez, amt);
+
+      PVector c = new PVector();
+      amt = (1 - d_val) / (c_val - d_val);
+      c.x = lerp(x, x + rez, amt);
+      c.y = y + rez;
+
+
+      PVector d = new PVector();
+      amt = (1 - a_val) / (d_val - a_val);
+      d.x = x;
+      d.y = lerp(y, y + rez, amt);
 
       switch (state) {
       case 1:  
@@ -139,7 +140,6 @@ void draw() {
       }
     }
   }
-  noLoop();
 }
 
 int getState(int a, int b, int c, int d) {
