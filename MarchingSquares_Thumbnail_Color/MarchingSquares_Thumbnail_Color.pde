@@ -1,17 +1,18 @@
-Bubble[] bubbles = new Bubble[15];
 float[][] field;
-int rez = 5;
+int rez = 20;
 int cols, rows;
+float increment = 0.2;
+float zoff = 0;
+OpenSimplexNoise noise;
 
 void setup() {
-  size(800, 600);
-  randomSeed(2);
-  cols = 1 + width / rez;
-  rows = 1 + height / rez;
+  size(1920, 1080);
+  pixelDensity(2);
+  noise = new OpenSimplexNoise();
+  cols = 1+width / rez;
+  rows = 1+height / rez;
   field = new float[cols][rows];
-  for (int i = 0; i < bubbles.length; i++) {
-    bubbles[i] = new Bubble();
-  }
+  randomSeed(4);
 }
 
 void line(PVector v1, PVector v2) {
@@ -19,57 +20,49 @@ void line(PVector v1, PVector v2) {
 }
 
 void draw() {
-  background(0); 
-
-  //for (int i = 0; i < cols; i++) {
-  //  float x = i * rez;
-  //  stroke(255, 100);
-  //  line(x, 0, x, height);
-  //}
-
-  //for (int i = 0; i < rows; i++) {
-  //  float y = i * rez;
-  //  stroke(255, 100);
-  //  line(0, y, width, y);
-  //}
-
+  background(112, 50, 126); 
+  float xoff = 0;
   for (int i = 0; i < cols; i++) {
+    xoff += increment;
+    float yoff = 0;
     for (int j = 0; j < rows; j++) {
-      float sum = 0;
-      float x = i * rez;
-      float y = j * rez;
-      for (Bubble b : bubbles) {
-        sum += b.r*b.r / ((x-b.x)*(x-b.x) + (y-b.y)*(y-b.y));
-      }
-      field[i][j] = sum;
+      field[i][j] = (float)(noise.eval(xoff, yoff, zoff));
+      yoff += increment;
     }
   }
 
+  zoff += 0.025;
 
-  for (Bubble b : bubbles) {
-    b.update();
-    //b.show();
+
+  for (int i = 0; i < cols; i++) {
+    for (int j = 0; j < rows; j++) {
+      float amt = map(field[i][j], -1, 1, 0, 1);
+      color c = lerpColor(color(112, 50, 126), color(240, 99, 164), amt);
+      noStroke();
+      fill(c);
+      rectMode(CENTER);
+      rect(i*rez, j*rez, rez, rez);
+    }
   }
-
 
   for (int i = 0; i < cols-1; i++) {
     for (int j = 0; j < rows-1; j++) {
       float x = i * rez;
       float y = j * rez;
+      int state = getState(ceil(field[i][j]), ceil(field[i+1][j]), 
+        ceil(field[i+1][j+1]), ceil(field[i][j+1]));
 
+      // Blocky
+      //PVector a = new PVector(x + rez * 0.5, y            );
+      //PVector b = new PVector(x + rez, y + rez * 0.5);
+      //PVector c = new PVector(x + rez * 0.5, y + rez      );
+      //PVector d = new PVector(x, y + rez * 0.5);
 
-      float threshold = 1;
-      int c1 = field[i][j]  < threshold ? 0 : 1;
-      int c2 = field[i+1][j]  < threshold ? 0 : 1;
-      int c3 = field[i+1][j+1]  < threshold ? 0 : 1;
-      int c4 = field[i][j+1]  < threshold ? 0 : 1;
-      int state = getState(c1, c2, c3, c4);
-      stroke(255);
-      strokeWeight(2);
-      float a_val = field[i][j];
-      float b_val = field[i+1][j];
-      float c_val = field[i+1][j+1];
-      float d_val = field[i][j+1];      
+      // Interpolate
+      float a_val = field[i][j] + 1;
+      float b_val = field[i+1][j] + 1;
+      float c_val = field[i+1][j+1] + 1;
+      float d_val = field[i][j+1] + 1;      
 
       PVector a = new PVector();
       float amt = (1 - a_val) / (b_val - a_val);
@@ -90,8 +83,11 @@ void draw() {
       PVector d = new PVector();
       amt = (1 - a_val) / (d_val - a_val);
       d.x = x;
-      d.y = lerp(y, y + rez, amt);
+      d.y = lerp(y, y + rez, amt);   
 
+
+      stroke(252, 238, 33);
+      strokeWeight(8);
       switch (state) {
       case 1:  
         line(c, d);
@@ -140,6 +136,8 @@ void draw() {
       }
     }
   }
+
+  //save("thumbnail.png");
 }
 
 int getState(int a, int b, int c, int d) {

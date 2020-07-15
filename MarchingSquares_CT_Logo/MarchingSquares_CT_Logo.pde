@@ -1,16 +1,16 @@
-PVector[] points = new PVector[150];
+
 float[][] field;
-int rez = 10;
+int rez = 20;
 int cols, rows;
 
+PImage img;
+
 void setup() {
-  size(1280, 720);
-  cols = 1 + width / rez;
-  rows = 1 + height / rez;
+  size(1920, 1080);
+  img = loadImage("image0.jpg");
+  cols = width / rez;
+  rows = height / rez;
   field = new float[cols][rows];
-  for (int i = 0; i < points.length; i++) {
-    points[i] = new PVector(random(cols), random(rows), random(cols));
-  }
 }
 
 void line(PVector v1, PVector v2) {
@@ -18,26 +18,20 @@ void line(PVector v1, PVector v2) {
 }
 
 void draw() {
-  background(0); 
+  image(img, 0, 0, width, height);
+
+
+  loadPixels();
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      float[] distances = new float[points.length];
-      for (int n = 0; n < points.length; n++) {
-        PVector v = points[n];
-        float z = frameCount % cols;
-        float d = dist(i, j, z, v.x, v.y, v.z);
-        distances[n] = d;
-      }
-      float[] sorted = sort(distances);
-      field[i][j] = sorted[1];
-    }
-  }
-  float factor = 5;
-  for (int i = 0; i < cols; i++) {
-    for (int j = 0; j < rows; j++) {
-      fill(field[i][j]*factor);
+      int x = i * rez;
+      int y = j * rez;
+      color c = pixels[x+y*width];
+      float b = brightness(c);
+      field[i][j] = b;
+      fill(255-b);
       noStroke();
-      rect(i*rez, j*rez, rez, rez);
+      rect(x, y, rez, rez);
     }
   }
 
@@ -49,12 +43,12 @@ void draw() {
       PVector b = new PVector(x + rez, y + rez * 0.5);
       PVector c = new PVector(x + rez * 0.5, y + rez      );
       PVector d = new PVector(x, y + rez * 0.5);
-      
-      float threshold = 70;
-      int c1 = field[i][j] * factor < threshold ? 0 : 1;
-      int c2 = field[i+1][j] * factor < threshold ? 0 : 1;
-      int c3 = field[i+1][j+1] * factor < threshold ? 0 : 1;
-      int c4 = field[i][j+1] * factor < threshold ? 0 : 1;
+
+      float threshold = 245; //map(mouseX, 0, width, 0, 255);
+      int c1 = field[i][j] < threshold ? 0 : 1;
+      int c2 = field[i+1][j] < threshold ? 0 : 1;
+      int c3 = field[i+1][j+1]  < threshold ? 0 : 1;
+      int c4 = field[i][j+1] < threshold ? 0 : 1;
 
 
       int state = getState(c1, c2, c3, c4);
@@ -108,8 +102,7 @@ void draw() {
       }
     }
   }
-  
-  // saveFrame("worley2/worley####.png");
+  // saveFrame("image6.png");
 }
 
 int getState(int a, int b, int c, int d) {

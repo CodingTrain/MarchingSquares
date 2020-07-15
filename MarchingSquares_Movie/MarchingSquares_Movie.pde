@@ -1,16 +1,26 @@
-PVector[] points = new PVector[150];
+import processing.video.*;
+
 float[][] field;
 int rez = 10;
 int cols, rows;
 
+Movie mov;
+//int newFrame = 0;
+
+void movieEvent(Movie mov) {
+  mov.read();
+}
+
+
 void setup() {
-  size(1280, 720);
-  cols = 1 + width / rez;
-  rows = 1 + height / rez;
+  size(640, 480);
+  mov = new Movie(this, "fingers.mov");  
+  mov.loop();
+  //mov.jump(0);
+  //mov.pause();
+  cols = width / rez;
+  rows = height / rez;
   field = new float[cols][rows];
-  for (int i = 0; i < points.length; i++) {
-    points[i] = new PVector(random(cols), random(rows), random(cols));
-  }
 }
 
 void line(PVector v1, PVector v2) {
@@ -18,29 +28,21 @@ void line(PVector v1, PVector v2) {
 }
 
 void draw() {
-  background(0); 
+  image(mov, 0, 0, width, height);
+  loadPixels();
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      float[] distances = new float[points.length];
-      for (int n = 0; n < points.length; n++) {
-        PVector v = points[n];
-        float z = frameCount % cols;
-        float d = dist(i, j, z, v.x, v.y, v.z);
-        distances[n] = d;
-      }
-      float[] sorted = sort(distances);
-      field[i][j] = sorted[1];
-    }
-  }
-  float factor = 5;
-  for (int i = 0; i < cols; i++) {
-    for (int j = 0; j < rows; j++) {
-      fill(field[i][j]*factor);
+      int x = i * rez;
+      int y = j * rez;
+      color c = pixels[x+y*width];
+      float b = brightness(c);
+      field[i][j] = b;
+      fill(b);
       noStroke();
-      rect(i*rez, j*rez, rez, rez);
+      rect(x, y, rez, rez);
     }
   }
-
+  // background(255);
   for (int i = 0; i < cols-1; i++) {
     for (int j = 0; j < rows-1; j++) {
       float x = i * rez;
@@ -49,17 +51,19 @@ void draw() {
       PVector b = new PVector(x + rez, y + rez * 0.5);
       PVector c = new PVector(x + rez * 0.5, y + rez      );
       PVector d = new PVector(x, y + rez * 0.5);
-      
-      float threshold = 70;
-      int c1 = field[i][j] * factor < threshold ? 0 : 1;
-      int c2 = field[i+1][j] * factor < threshold ? 0 : 1;
-      int c3 = field[i+1][j+1] * factor < threshold ? 0 : 1;
-      int c4 = field[i][j+1] * factor < threshold ? 0 : 1;
+
+      float threshold = 0.65*255;//map(mouseX, 0, width, 0, 255);
+      int c1 = field[i][j] < threshold ? 0 : 1;
+      int c2 = field[i+1][j] < threshold ? 0 : 1;
+      int c3 = field[i+1][j+1]  < threshold ? 0 : 1;
+      int c4 = field[i][j+1] < threshold ? 0 : 1;
 
 
       int state = getState(c1, c2, c3, c4);
-      stroke(255);
-      strokeWeight(4);
+      stroke(0);
+      //noStroke();
+      //stroke(255, 100, 127);
+        strokeWeight(4);
       switch (state) {
       case 1:  
         line(c, d);
@@ -108,10 +112,40 @@ void draw() {
       }
     }
   }
-  
-  // saveFrame("worley2/worley####.png");
+
+  //if (newFrame < getLength() - 1) newFrame++;
+  //setFrame(newFrame);  
+  //saveFrame("video4/video####.png");
+  //if (newFrame == getLength() - 1) exit();
 }
 
 int getState(int a, int b, int c, int d) {
   return a * 8 + b * 4  + c * 2 + d * 1;
+}
+
+int getFrame() {    
+  return ceil(mov.time() * 30) - 1;
+}
+
+void setFrame(int n) {
+  mov.play();
+
+  // The duration of a single frame:
+  float frameDuration = 1.0 / mov.frameRate;
+
+  // We move to the middle of the frame by adding 0.5:
+  float where = (n + 0.5) * frameDuration; 
+
+  // Taking into account border effects:
+  float diff = mov.duration() - where;
+  if (diff < 0) {
+    where += diff - 0.25 * frameDuration;
+  }
+
+  mov.jump(where);
+  mov.pause();
+}  
+
+int getLength() {
+  return int(mov.duration() * mov.frameRate);
 }

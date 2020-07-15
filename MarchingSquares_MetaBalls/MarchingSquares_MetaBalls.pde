@@ -1,10 +1,10 @@
-Bubble[] bubbles = new Bubble[15];
+Bubble[] bubbles = new Bubble[16];
 float[][] field;
-int rez = 5;
+int rez = 10;
 int cols, rows;
 
 void setup() {
-  size(800, 600);
+  size(1280, 720);
   cols = 1 + width / rez;
   rows = 1 + height / rez;
   field = new float[cols][rows];
@@ -51,18 +51,54 @@ void draw() {
     for (int j = 0; j < rows-1; j++) {
       float x = i * rez;
       float y = j * rez;
-      PVector a = new PVector(x + rez * 0.5, y            );
-      PVector b = new PVector(x + rez, y + rez * 0.5);
-      PVector c = new PVector(x + rez * 0.5, y + rez      );
-      PVector d = new PVector(x, y + rez * 0.5);
+      //PVector a = new PVector(x + rez * 0.5, y            );
+      //PVector b = new PVector(x + rez, y + rez * 0.5);
+      //PVector c = new PVector(x + rez * 0.5, y + rez      );
+      //PVector d = new PVector(x, y + rez * 0.5);
 
-      float threshold = 1;
+      //float threshold = 1;
+      //int c1 = field[i][j]  < threshold ? 0 : 1;
+      //int c2 = field[i+1][j]  < threshold ? 0 : 1;
+      //int c3 = field[i+1][j+1]  < threshold ? 0 : 1;
+      //int c4 = field[i][j+1]  < threshold ? 0 : 1;
+      //int state = getState(c1, c2, c3, c4);
+
+      
+      // interpolation
+       float threshold = 1;
       int c1 = field[i][j]  < threshold ? 0 : 1;
       int c2 = field[i+1][j]  < threshold ? 0 : 1;
       int c3 = field[i+1][j+1]  < threshold ? 0 : 1;
       int c4 = field[i][j+1]  < threshold ? 0 : 1;
-
       int state = getState(c1, c2, c3, c4);
+      stroke(255);
+      strokeWeight(2);
+      float a_val = field[i][j];
+      float b_val = field[i+1][j];
+      float c_val = field[i+1][j+1];
+      float d_val = field[i][j+1];      
+
+      PVector a = new PVector();
+      float amt = (1 - a_val) / (b_val - a_val);
+      a.x = lerp(x, x + rez, amt);
+      a.y = y;
+
+      PVector b = new PVector();
+      amt = (1 - b_val) / (c_val - b_val);
+      b.x = x + rez;
+      b.y = lerp(y, y + rez, amt);
+
+      PVector c = new PVector();
+      amt = (1 - d_val) / (c_val - d_val);
+      c.x = lerp(x, x + rez, amt);
+      c.y = y + rez;
+
+
+      PVector d = new PVector();
+      amt = (1 - a_val) / (d_val - a_val);
+      d.x = x;
+      d.y = lerp(y, y + rez, amt);
+
       stroke(255);
       strokeWeight(2);
       switch (state) {
@@ -112,7 +148,10 @@ void draw() {
         break;
       }
     }
-  }
+   }
+  
+  // saveFrame("metaballs5/metaballs####.png");
+  
 }
 
 int getState(int a, int b, int c, int d) {

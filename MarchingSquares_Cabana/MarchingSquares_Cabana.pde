@@ -7,6 +7,7 @@ OpenSimplexNoise noise;
 
 void setup() {
   fullScreen(P2D);
+  pixelDensity(2);
   noise = new OpenSimplexNoise();
   cols = 1 + width / rez;
   rows = 1 + height / rez;

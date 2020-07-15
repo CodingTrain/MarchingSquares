@@ -4,7 +4,7 @@ class Bubble {
   float r;
 
   Bubble() {
-    r = random(20, 40);
+    r = random(40, 60);
     x = random(r, width-r);
     y = random(r, height-r);
     vx = random(-2,2);
@@ -14,6 +14,8 @@ class Bubble {
   void show() {
     noFill();
     stroke(255);
+    fill(255,50);
+    strokeWeight(1);
     circle(x, y, r*2);
   }
 
